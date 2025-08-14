@@ -216,3 +216,18 @@ input, textarea{
 @media (max-width:768px){
   .container{ padding-top:8px !important; }
 }
+/* === 顶栏改成纯白，和整体统一 === */
+.topbar{
+  background: #ffffff !important;                 /* 纯白 */
+  border-bottom: 1px solid rgba(0,0,0,.06) !important; /* 很淡的分隔线 */
+  box-shadow: 0 2px 8px rgba(0,0,0,.03) !important;    /* 轻微阴影，可去掉 */
+  padding: 6px 12px !important;
+}
+
+/* 顶栏里的字色也统一为深色 */
+.brand strong{ color:#111 !important; }
+
+/* 手机上也保持纯白 */
+@media (max-width:768px){
+  .topbar{ background:#fff !important; box-shadow:0 2px 8px rgba(0,0,0,.03) !important; }
+}
