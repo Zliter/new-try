@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>我们班的家｜在线相册</title>
   <link rel="stylesheet" href="./css/styles.css" />
-
-  <!-- 标签分类最小样式 -->
   <style>
     .tagdir{position:fixed;inset:0;z-index:9998;background:#fff;color:#111;display:flex;flex-direction:column}
     .tagdir.hide{display:none}
@@ -19,15 +17,14 @@
     .tagbox .count{font-size:12px;color:#666;background:#f3f5f7;padding:2px 6px;border-radius:999px}
     .viewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center}
     .viewer.hide{display:none}
-    .viewer img{max-width:94vw;max-height:94vh;border-radius:12px}
+    .viewer img{max-width:94vw;max-height:94vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .thumb{max-width:170px;border-radius:10px;margin:6px;cursor:zoom-in}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand"><strong>我们班的家</strong></div>
-    <div class="actions">
-      <button id="themeBtn" class="btn">🌓 主题</button>
-    </div>
+    <div class="actions"><button id="themeBtn" class="btn">🌓 主题</button></div>
   </header>
 
   <main class="container">
@@ -40,17 +37,20 @@
         </label>
       </div>
       <div class="row">
-        <input id="tagInput" placeholder="标签（逗号分隔）">
+        <input id="tagInput" placeholder="给本次上传打标签（逗号分隔） 例：运动会,合影">
         <button id="uploadBtn" class="btn primary">开始上传</button>
         <button id="refreshBtn" class="btn">刷新</button>
       </div>
-      <div id="tip" class="muted"></div>
-      <progress id="upProg" value="0" max="100" style="width:100%;display:none"></progress>
+      <div id="tip" class="muted" style="margin-top:6px"></div>
+      <progress id="upProg" value="0" max="100" style="width:100%;height:10px;display:none"></progress>
     </section>
 
-    <button id="openTagDir" class="btn">🏷️ 标签分类</button>
+    <div class="row" style="margin:10px 0;">
+      <button id="openTagDir" class="btn">🏷️ 标签分类</button>
+    </div>
+
     <section class="row searchbar">
-      <input id="searchInput" placeholder="按标签搜索">
+      <input id="searchInput" placeholder="按标签搜索（空格分隔多个关键词） 例：运动会 合影">
       <button id="clearSearch" class="btn">清除</button>
     </section>
 
@@ -58,12 +58,12 @@
   </main>
 
   <!-- 全屏图片查看器 -->
-  <div id="viewer" class="viewer hide">
+  <div id="viewer" class="viewer hide" aria-hidden="true">
     <img id="viewerImg" alt="preview">
   </div>
 
-  <!-- 标签目录面板 -->
-  <div id="tagDir" class="tagdir hide">
+  <!-- 全屏标签目录 -->
+  <div id="tagDir" class="tagdir hide" aria-hidden="true">
     <div class="tagdir-head">
       <strong>标签分类</strong>
       <button id="closeTagDir" class="btn">关闭</button>
@@ -75,8 +75,174 @@
 
   <!-- LeanCloud SDK（国内版） -->
   <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4/dist/av-min.js"></script>
-  <script src="./js/config.js"></script>
-  <script src="./js/api.js"></script>
-  <script src="./js/app.js"></script>
+
+  <script>
+  // ====== 1) 初始化 LeanCloud（用你的国内版参数）======
+  AV.init({
+    appId: 'NQG0pixqGI0KSXY0iyasWsF-gzGZoHsz',    // ← 请再对照控制台核对
+    appKey: 'pA03oWFmaVkyGd2H0PTdxq9V',           // ← 公开的 AppKey
+    serverURL: 'https://nqgopixq.lc-cn-n1-shared.com' // ← 你的 REST API 服务器地址
+  });
+
+  // ====== 2) 简易工具 ======
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  $('#year').textContent = new Date().getFullYear();
+  $('#themeBtn').onclick = () => document.documentElement.classList.toggle('light');
+
+  // ====== 3) 上传逻辑（存文件 + 记录 tags 到 Photo 表）======
+  const picker = $('#picker');
+  const uploadBtn = $('#uploadBtn');
+  const tip = $('#tip');
+  const prog = $('#upProg');
+  const gallery = $('#galleryRoot');
+  const searchInput = $('#searchInput');
+
+  let filesPicked = [];
+  picker.addEventListener('change', e => {
+    filesPicked = Array.from(e.target.files || []);
+    tip.textContent = filesPicked.length ? `已选择 ${filesPicked.length} 张` : '';
+  });
+
+  uploadBtn.addEventListener('click', async () => {
+    if (!filesPicked.length) return alert('请先选择图片');
+    const tags = $('#tagInput').value.split(',').map(t => t.trim()).filter(Boolean);
+
+    prog.style.display = 'block';
+    prog.value = 0;
+    tip.textContent = '正在上传...';
+
+    // 表结构：Photo { file(AVFile), tags(Array) }
+    const Photo = AV.Object.extend('Photo');
+
+    for (let i = 0; i < filesPicked.length; i++) {
+      const f = filesPicked[i];
+      const avFile = new AV.File(f.name, f);
+      await avFile.save();
+
+      const rec = new Photo();
+      rec.set('file', avFile);
+      rec.set('tags', tags);
+      await rec.save();
+
+      prog.value = ((i+1)/filesPicked.length)*100;
+    }
+
+    tip.textContent = '上传完成！';
+    prog.style.display = 'none';
+    filesPicked = [];
+    picker.value = '';
+    $('#tagInput').value = '';
+    document.dispatchEvent(new CustomEvent('refresh-gallery'));
+  });
+
+  // ====== 4) 读取与渲染相册 ======
+  async function listPhotosByTags(searchTags=[]) {
+    const query = new AV.Query('Photo');
+    if (searchTags.length) query.containsAll('tags', searchTags);
+    query.descending('createdAt');
+    return await query.find();
+  }
+
+  async function renderGallery() {
+    const tags = searchInput.value.trim() ? searchInput.value.trim().split(/\s+/) : [];
+    gallery.innerHTML = '加载中…';
+    try {
+      const rows = await listPhotosByTags(tags);
+      if (!rows.length) { gallery.innerHTML = '<div class="muted">还没有图片</div>'; return; }
+      gallery.innerHTML = rows.map(r=>{
+        const f = r.get('file'); const url = f?.url?.();
+        return `<img src="${url}" class="thumb" loading="lazy">`;
+      }).join('');
+    } catch(e) {
+      gallery.innerHTML = '加载失败：'+e.message;
+    }
+  }
+
+  $('#refreshBtn').addEventListener('click', renderGallery);
+  $('#clearSearch').addEventListener('click', ()=>{ searchInput.value=''; renderGallery(); });
+  document.addEventListener('refresh-gallery', renderGallery);
+  renderGallery(); // 首次加载
+
+  // ====== 5) 标签分类面板 ======
+  const openTagDir = $('#openTagDir');
+  const tagPanel   = $('#tagDir');
+  const tagGrid    = $('#tagDirGrid');
+  const closeTagDir= $('#closeTagDir');
+
+  function openPanel(){ tagPanel.classList.remove('hide'); }
+  function closePanel(){ tagPanel.classList.add('hide'); }
+  closeTagDir.addEventListener('click', closePanel);
+  tagPanel.addEventListener('click', e=>{ if(e.target===tagPanel) closePanel(); });
+
+  async function buildTagDirectory(){
+    tagGrid.innerHTML = '加载中…';
+    try{
+      // 拉全量聚合标签
+      const all = await listPhotosByTags([]);
+      const map = new Map();
+      for (const p of all){
+        (p.get('tags')||[]).forEach(t=>{
+          if(!t) return; map.set(t, (map.get(t)||0)+1);
+        });
+      }
+      tagGrid.innerHTML = '';
+      [...map.entries()].sort((a,b)=>b[1]-a[1]).forEach(([tag,cnt])=>{
+        const div = document.createElement('div');
+        div.className = 'tagbox';
+        div.innerHTML = `<span class="name">${tag}</span><span class="count">${cnt}</span>`;
+        div.onclick = ()=>{
+          searchInput.value = tag;
+          closePanel();
+          renderGallery();
+          gallery?.scrollIntoView({behavior:'smooth', block:'start'});
+        };
+        tagGrid.appendChild(div);
+      });
+      if (!tagGrid.children.length) tagGrid.innerHTML = '<div class="muted">还没有标签</div>';
+    }catch(e){ tagGrid.innerHTML = '加载失败：'+e.message; }
+  }
+  openTagDir.addEventListener('click', ()=>{ openPanel(); buildTagDirectory(); });
+
+  // ====== 6) 全屏预览（点缩略图进入；左右滑；长按下载）======
+  const viewer = $('#viewer');
+  const bigImg = $('#viewerImg');
+  let urls = [], idx = 0, x0 = 0, longTimer=null;
+  const LONG_MS=550, SWIPE=40;
+
+  function collectThumbs(){ urls = $$('#galleryRoot img.thumb').map(i=>i.src); }
+  function show(i){ if(!urls.length) return; idx=(i+urls.length)%urls.length; bigImg.src=urls[idx]; }
+  function openWith(src){ collectThumbs(); const i=urls.indexOf(src); show(i>=0?i:0); viewer.classList.remove('hide'); }
+  function closeV(){ viewer.classList.add('hide'); }
+
+  gallery.addEventListener('click', e=>{
+    const t=e.target; if(t && t.tagName==='IMG' && t.classList.contains('thumb')) openWith(t.src);
+  });
+
+  viewer.addEventListener('touchstart', e=>{
+    if (viewer.classList.contains('hide')) return;
+    x0 = e.touches[0].clientX;
+    clearTimeout(longTimer); longTimer=setTimeout(()=>{
+      // 下载（iOS 打开新页长按保存）
+      const src = urls[idx]; if(!src) return;
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { window.open(src,'_blank'); return; }
+      const a=document.createElement('a'); a.href=src; a.setAttribute('download','photo.jpg'); document.body.appendChild(a); a.click(); a.remove();
+    }, LONG_MS);
+  }, {passive:true});
+  viewer.addEventListener('touchmove', ()=>{ if(longTimer) clearTimeout(longTimer); }, {passive:true});
+  viewer.addEventListener('touchend', e=>{
+    if (viewer.classList.contains('hide')) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (longTimer) clearTimeout(longTimer);
+    if (Math.abs(dx)>SWIPE) show(idx + (dx>0?-1:+1));
+  }, {passive:true});
+  viewer.addEventListener('click', e=>{ if(e.target===viewer) closeV(); });
+  document.addEventListener('keydown', e=>{
+    if (viewer.classList.contains('hide')) return;
+    if (e.key==='Escape') closeV();
+    if (e.key==='ArrowLeft')  show(idx-1);
+    if (e.key==='ArrowRight') show(idx+1);
+  });
+  </script>
 </body>
 </html>
