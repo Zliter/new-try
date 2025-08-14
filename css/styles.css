@@ -220,7 +220,7 @@ input, textarea{
 .topbar{
   background: #ffffff !important;                 /* 纯白 */
   border-bottom: 1px solid rgba(0,0,0,.06) !important; /* 很淡的分隔线 */
-  box-shadow: 0 2px 8px rgba(0,0,0,.03) !important;    /* 轻微阴影，可去掉 */
+
   padding: 6px 12px !important;
 }
 
