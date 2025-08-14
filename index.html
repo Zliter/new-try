@@ -1,65 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我们班的相册</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-        header {
-            background-color: #4CAF50;
-            color: white;
-            text-align: center;
-            padding: 15px;
-        }
-        h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            padding: 10px;
-        }
-        .gallery img {
-            width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .gallery img:hover {
-            transform: scale(1.05);
-        }
-        footer {
-            text-align: center;
-            font-size: 0.8em;
-            padding: 15px;
-            color: #666;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我们班的家｜在线相册</title>
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
-    <header>
-        <h1>我们班的相册</h1>
-        <p>记录我们的美好瞬间</p>
-    </header>
+  <header class="topbar">
+    <div class="brand"><div class="logo"></div><strong>我们班的家</strong></div>
+    <div class="actions"><span class="pill small">免登录 · 内部使用</span><button id="themeBtn" class="btn">🌓 主题</button></div>
+  </header>
 
-    <div class="gallery">
-        <img src="https://via.placeholder.com/300x200?text=照片1" alt="照片1">
-        <img src="https://via.placeholder.com/300x200?text=照片2" alt="照片2">
-        <img src="https://via.placeholder.com/300x200?text=照片3" alt="照片3">
-        <img src="https://via.placeholder.com/300x200?text=照片4" alt="照片4">
-    </div>
+  <main class="container">
+    <section class="card">
+      <h2>上传照片（免登录）</h2>
+      <div id="drop" class="drop" tabindex="0">
+        把图片拖到这里，或
+        <label class="btn primary" style="cursor:pointer">选择文件
+          <input id="picker" type="file" accept="image/*" multiple style="display:none">
+        </label>
+      </div>
+      <div class="row">
+        <input id="tagInput" placeholder="给本次上传打标签（逗号分隔） 例：运动会,合影">
+        <button id="uploadBtn" class="btn primary">开始上传</button>
+        <button id="refreshBtn" class="btn">刷新</button>
+      </div>
+      <div id="tip" class="muted" style="margin-top:6px"></div>
+    </section>
 
-    <footer>
-        &copy; 2025 我们班的回忆
-    </footer>
+    <section class="row searchbar">
+      <input id="searchInput" placeholder="按标签搜索（空格分隔多个关键词） 例：运动会 合影">
+      <button id="clearSearch" class="btn">清除</button>
+    </section>
+
+    <section id="galleryRoot"></section>
+  </main>
+
+  <footer class="footer">© <span id="year"></span> 我们班的家</footer>
+
+  <!-- LeanCloud SDK（必须在你自己的脚本前） -->
+  <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4/dist/av-min.js"></script>
+
+  <!-- 你的脚本 -->
+  <script src="./js/config.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/app.js"></script>
 </body>
 </html>
