@@ -30,3 +30,64 @@
   document.addEventListener('refresh-gallery', doSearch);
   doSearch();
 })();
+// ===== 标签目录（Tag Directory） =====
+(function tagDirectoryInit(){
+  const $ = s => document.querySelector(s);
+  const openBtn = $('#openTagDir');
+  const closeBtn = $('#closeTagDir');
+  const panel   = $('#tagDir');
+  const grid    = $('#tagDirGrid');
+  const gallery = document.getElementById('galleryRoot');
+  const searchInput = document.getElementById('searchInput');
+
+  let ALL_CACHE = null;
+
+  async function ensureAll(){
+    if (ALL_CACHE) return ALL_CACHE;
+    ALL_CACHE = await apiListPhotos([]); // 全量
+    return ALL_CACHE;
+  }
+
+  async function buildTagDirectory(){
+    const all = await ensureAll();
+    const counter = new Map();
+    for (const p of all){
+      const tags = p.get('tags') || [];
+      tags.forEach(t=>{
+        if (!t) return;
+        counter.set(t, (counter.get(t)||0)+1);
+      });
+    }
+    grid.innerHTML = '';
+    const items = Array.from(counter.entries()).sort((a,b)=>b[1]-a[1]);
+    items.forEach(([tag, n])=>{
+      const box = document.createElement('div');
+      box.className = 'tagbox';
+      box.innerHTML = `<span class="name">${tag}</span><span class="count">${n}</span>`;
+      box.onclick = ()=>{
+        if (searchInput) searchInput.value = tag;
+        panel.classList.add('hide');
+        document.dispatchEvent(new CustomEvent('refresh-gallery'));
+        if (gallery && gallery.scrollIntoView) gallery.scrollIntoView({behavior:'smooth', block:'start'});
+      };
+      grid.appendChild(box);
+    });
+  }
+
+  function openPanel(){
+    panel.classList.remove('hide');
+    buildTagDirectory();
+  }
+  function closePanel(){ panel.classList.add('hide'); }
+
+  if (openBtn) openBtn.addEventListener('click', openPanel);
+  if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+  panel && panel.addEventListener('click', (e)=>{
+    if (e.target === panel) closePanel();
+  });
+
+  document.addEventListener('refresh-gallery', async ()=>{
+    if (!ALL_CACHE) ALL_CACHE = await apiListPhotos([]);
+  });
+})();
