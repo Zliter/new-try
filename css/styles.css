@@ -1,38 +1,143 @@
-:root{--bg:#0b0f14;--card:#10161d;--muted:#a7b0bc;--text:#e8eef6;--brand:#6aa1ff;--accent:#4dffb3;--border:rgba(255,255,255,.08)}
-:root.light{--bg:#f6f8fb;--card:#fff;--muted:#5b6572;--text:#16202a;--brand:#3b76f6;--accent:#0db37d;--border:rgba(0,0,0,.08)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-a{color:var(--brand);text-decoration:none} a:hover{text-decoration:underline}
-.container{max-width:1100px;margin:0 auto;padding:16px}
-.topbar{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.25);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px}
-.brand{display:flex;gap:10px;align-items:center;font-weight:700}
-.logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--accent))}
-.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:20px;border:1px solid var(--border);background:var(--card)}
-.btn{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--border);padding:10px 14px;border-radius:12px;background:var(--card);color:var(--text);cursor:pointer;transition:.15s}
-.btn:hover{transform:translateY(-1px)}
-.btn.primary{background:linear-gradient(135deg,var(--brand),var(--accent));color:#081017;border-color:transparent}
-input,textarea{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px}
-.drop{border:2px dashed var(--border);border-radius:14px;padding:22px;text-align:center}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
-.gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.item{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)}
-.thumb{width:100%;height:170px;object-fit:cover;background:#000;display:block}
-.meta{padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-.muted{color:var(--muted)}
-.tag{display:inline-block;margin:2px 4px;padding:2px 8px;border-radius:12px;border:1px solid var(--border);background:var(--bg);font-size:12px}
-.month{margin:24px 0 10px;font-weight:700;opacity:.9}
-.footer{padding:20px 0;text-align:center;color:var(--muted);border-top:1px solid var(--border);margin-top:18px}
-.warn{color:#ffb86b}.small{font-size:12px}
+/* ========== 基础色与整体风格 ========== */
+:root{
+  --bg:#0b0f14;
+  --card:#10161d;
+  --muted:#a7b0bc;
+  --text:#e8eef6;
+  --brand:#6aa1ff;
+  --accent:#4dffb3;
+  --border:rgba(255,255,255,.08);
+}
+:root.light{
+  --bg:#f6f8fb;
+  --card:#ffffff;
+  --muted:#5b6572;
+  --text:#16202a;
+  --brand:#3b76f6;
+  --accent:#0db37d;
+  --border:rgba(0,0,0,.08);
+}
 
-/* ===== 移动端适配 ===== */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ========== 顶部栏（已变“更细、更矮”） ========== */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:rgba(0,0,0,.18);              /* 更轻薄的背景 */
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);    /* 从粗边框改为 1px 细边 */
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px;
+  height:auto;
+  padding:8px 10px;                         /* 高度减小：原来一般是 14~20px */
+}
+.brand{display:flex; gap:8px; align-items:center; font-weight:700}
+.logo{width:24px; height:24px; border-radius:8px; background:linear-gradient(135deg,var(--brand),var(--accent))}
+.actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+
+.pill{
+  display:inline-flex; gap:6px; align-items:center;
+  padding:4px 8px;                          /* 更薄 */
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:var(--card);
+  font-size:12px;                           /* 文案更精致 */
+}
+
+/* ========== 容器 & 卡片 ========== */
+.container{max-width:1100px; margin:0 auto; padding:14px 12px}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+  margin-top:12px;
+}
+.muted{color:var(--muted)}
+.footer{
+  padding:16px 0;
+  text-align:center;
+  color:var(--muted);
+  border-top:1px solid var(--border);
+  margin-top:16px;
+}
+
+/* ========== 控件 ========== */
+.btn{
+  display:inline-flex; gap:6px; align-items:center;
+  border:1px solid var(--border);
+  padding:8px 12px;                         /* 更紧凑 */
+  border-radius:10px;
+  background:var(--card);
+  color:var(--text);
+  cursor:pointer; transition:.15s;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{
+  background:linear-gradient(135deg,var(--brand),var(--accent));
+  color:#081017; border-color:transparent;
+}
+input,textarea{
+  background:transparent; color:var(--text);
+  border:1px solid var(--border); border-radius:10px;
+  padding:8px 10px;                         /* 更紧凑 */
+}
+
+/* ========== 上传 / 布局 ========== */
+.drop{
+  border:2px dashed var(--border);
+  border-radius:12px;
+  padding:18px;                             /* 比原先更薄 */
+  text-align:center;
+}
+.row{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px}
+
+/* ========== 图库 ========== */
+.gallery{
+  display:grid; gap:10px;
+  grid-template-columns:repeat(4,1fr);
+}
+.item{
+  border:1px solid var(--border);
+  border-radius:10px; overflow:hidden;
+  background:var(--card);
+}
+.thumb{
+  width:100%; height:160px;                 /* 微降高度 */
+  object-fit:cover; background:#000; display:block;
+}
+.meta{
+  padding:8px;                              /* 更薄 */
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+}
+.tag{
+  display:inline-block; margin:2px 4px; padding:2px 6px;
+  border-radius:12px; border:1px solid var(--border);
+  background:var(--bg); font-size:12px;
+}
+.month{margin:18px 0 8px; font-weight:700; opacity:.9}
+
+/* ========== 移动端适配：顶栏更矮、按钮更好点、网格自适应 ========== */
 @media (max-width: 768px){
-  body{font-size:16px;padding:0 6px}
-  .topbar{flex-direction:column;align-items:flex-start;gap:6px}
-  .actions{width:100%;display:flex;justify-content:space-between}
-  .row{flex-direction:column;align-items:stretch;gap:8px}
-  input[type="text"],input[type="file"],button{font-size:16px;padding:10px}
-  .gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-  .thumb{height:auto;border-radius:8px}
-  .meta{flex-direction:column;align-items:flex-start}
+  body{font-size:16px; padding:0 6px}
+  .topbar{
+    padding:6px 8px;                        /* 手机进一步减小 */
+    gap:6px;
+  }
+  .logo{width:20px; height:20px}
+  .pill{padding:3px 6px; font-size:11px}
+  .actions{width:100%; justify-content:space-between}
+  .row{flex-direction:column; align-items:stretch; gap:8px}
+  input[type="text"], input[type="file"], button{font-size:16px; padding:10px}
+  .gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px}
+  .thumb{height:auto; border-radius:8px}
+  .meta{flex-direction:column; align-items:flex-start}
 }
