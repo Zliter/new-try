@@ -254,3 +254,39 @@ html, body, .container{
 .topbar::before, .topbar::after{
   content: none !important;
 }
+/* ===== 标签目录（全屏面板） ===== */
+.tagdir{
+  position: fixed; inset: 0; z-index: 9998;
+  background: #fff; color: #111;
+  display: flex; flex-direction: column;
+}
+.tagdir.hide{ display: none; }
+.tagdir-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  background:#fff;
+  position: sticky; top: 0;
+}
+.tagdir-grid{
+  padding: 12px; display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+.tagbox{
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+  cursor: pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:.15s;
+}
+.tagbox:hover{ transform: translateY(-1px); }
+.tagbox .name{ font-weight:600; }
+.tagbox .count{
+  font-size:12px; color:#666; background:#f3f5f7;
+  padding:2px 6px; border-radius: 999px;
+}
+@media (max-width:768px){
+  .tagdir-grid{ grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap:8px; }
+}
