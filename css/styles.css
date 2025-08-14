@@ -231,3 +231,26 @@ input, textarea{
 @media (max-width:768px){
   .topbar{ background:#fff !important; box-shadow:0 2px 8px rgba(0,0,0,.03) !important; }
 }
+/* === 顶栏彻底纯白（去阴影、去模糊、去渐变）=== */
+.topbar{
+  background: #ffffff !important;                 /* 纯白 */
+  border: none !important;                         /* 不要边框 */
+  box-shadow: none !important;                     /* 去掉阴影 */
+  -webkit-box-shadow: none !important;
+  backdrop-filter: none !important;                /* 去掉毛玻璃导致的发灰 */
+  -webkit-backdrop-filter: none !important;
+  background-image: none !important;               /* 保险：禁用背景渐变 */
+  padding: 6px 12px !important;
+}
+.brand strong{ color:#111 !important; }
+.logo{ box-shadow:none !important; }
+
+/* 页面背景也强制白色，避免透出深色 */
+html, body, .container{
+  background: #ffffff !important;
+}
+
+/* 顶栏前后伪元素也清空，防止某些主题加了阴影条 */
+.topbar::before, .topbar::after{
+  content: none !important;
+}
