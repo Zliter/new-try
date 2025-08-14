@@ -3,13 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的网站</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>我们班的相册</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 10px;
+        }
+        .gallery img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .gallery img:hover {
+            transform: scale(1.05);
+        }
+        footer {
+            text-align: center;
+            font-size: 0.8em;
+            padding: 15px;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-    <h1>欢迎来到我的网站！</h1>
-    <p>这是用 GitHub Pages 建的第一个网页。</p>
+    <header>
+        <h1>我们班的相册</h1>
+        <p>记录我们的美好瞬间</p>
+    </header>
 
-    <script src="js/config.js"></script>
+    <div class="gallery">
+        <img src="https://via.placeholder.com/300x200?text=照片1" alt="照片1">
+        <img src="https://via.placeholder.com/300x200?text=照片2" alt="照片2">
+        <img src="https://via.placeholder.com/300x200?text=照片3" alt="照片3">
+        <img src="https://via.placeholder.com/300x200?text=照片4" alt="照片4">
+    </div>
+
+    <footer>
+        &copy; 2025 我们班的回忆
+    </footer>
 </body>
 </html>
