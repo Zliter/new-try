@@ -169,4 +169,50 @@ input,textarea{
   /* 顶栏下的整体内边距再小一点，避免视觉上显得厚 */
   .container{ padding-top: 8px !important; }
 }
+/* ===== 强制全白浅色主题覆盖（放在文件最后） ===== */
+:root.light{
+  --bg:#ffffff !important;
+  --card:#ffffff !important;
+  --text:#111111 !important;
+  --muted:#5b6572 !important;
+  --brand:#3b76f6 !important;
+  --accent:#12b886 !important;
+  --border:rgba(0,0,0,.12) !important;
+}
+html, body{ background:#ffffff !important; color:#111 !important; }
 
+.topbar{
+  background:#f7f7f9 !important;
+  border-bottom:1px solid var(--border) !important;
+  padding:6px 8px !important;
+}
+.pill{ display:none !important; }          /* 隐藏“免登录·内部使用” */
+#themeBtn{ display:none !important; }      /* 隐藏主题按钮 */
+
+.card, .drop, .meta, .footer, .searchbar, .row{
+  background:#ffffff !important;
+  color:#111 !important;
+  border-color:var(--border) !important;
+}
+.btn{
+  background:#fafafa !important;
+  color:#111 !important;
+  border:1px solid var(--border) !important;
+}
+.btn.primary{
+  background:linear-gradient(135deg,#5a8ff7,#19c28e) !important;
+  color:#fff !important;
+  border-color:transparent !important;
+}
+input, textarea{
+  background:#ffffff !important;
+  color:#111 !important;
+  border:1px solid var(--border) !important;
+}
+.gallery{ background:#fff !important; }
+.thumb{ background:#fff !important; }
+
+/* 手机端更清爽 */
+@media (max-width:768px){
+  .container{ padding-top:8px !important; }
+}
