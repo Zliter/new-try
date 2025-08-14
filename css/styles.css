@@ -290,3 +290,25 @@ html, body, .container{
 @media (max-width:768px){
   .tagdir-grid{ grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap:8px; }
 }
+/* ===== 全屏查看器（纯净版） ===== */
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer.hide {
+  display: none;
+}
+
+.viewer img {
+  max-width: 94vw;
+  max-height: 94vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  touch-action: none; /* 提升触控手势稳定性 */
+}
