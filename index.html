@@ -64,10 +64,12 @@
     <section id="galleryRoot"></section>
   </main>
 
+  <!-- 全屏图片查看器 -->
   <div id="viewer" class="viewer hide" aria-hidden="true">
     <img id="viewerImg" alt="preview">
   </div>
 
+  <!-- 全屏标签目录面板 -->
   <div id="tagDir" class="tagdir hide" aria-hidden="true">
     <div class="tagdir-head">
       <strong>标签分类</strong>
@@ -80,22 +82,112 @@
 
   <!-- LeanCloud SDK（仍保留，不影响新上传方案） -->
   <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4/dist/av-min.js"></script>
-  <!-- 新增：引用额外脚本 -->
-  <script src="./js/extra-1.js"></script>
-  <script src="./js/extra-2.js"></script>
 
   <!-- 读取相册清单（从 ./photos/index.json） -->
   <script src="./js/photos-json.js?v=1"></script>
-  <script src="./js/upload-freeimage.js?v=1"></script>
 
+  <!-- 新增：md5 库（生成又拍云上传签名） -->
+  <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+  <!-- 新增：又拍云直传脚本 -->
+  <script src="./js/upload-upyun.js?v=1"></script>
+
+  <!-- 你的脚本 -->
   <script src="./js/config.js?v=16"></script>
   <script src="./js/api.js?v=16"></script>
   <script src="./js/ui.js?v=16"></script>
   <script src="./js/app.js?v=16"></script>
 
-  <!-- 标签分类目录 + 全屏查看器逻辑 -->
+  <!-- 标签分类目录 + 全屏查看器逻辑（保持不变） -->
   <script>
-    /* 你的原有 JS 内容保持不变 */
+  (async function(){
+    const openBtn = document.getElementById('openTagDir');
+    const closeBtn = document.getElementById('closeTagDir');
+    const panel   = document.getElementById('tagDir');
+    const grid    = document.getElementById('tagDirGrid');
+    const search  = document.getElementById('searchInput');
+    const gallery = document.getElementById('galleryRoot');
+    const themeBtn = document.getElementById('themeBtn');
+
+    if (themeBtn) themeBtn.onclick = ()=> document.documentElement.classList.toggle('light');
+
+    function openPanel(){ panel.classList.remove('hide'); }
+    function closePanel(){ panel.classList.add('hide'); }
+    closeBtn && closeBtn.addEventListener('click', closePanel);
+    panel && panel.addEventListener('click', (e)=>{ if(e.target===panel) closePanel(); });
+
+    async function buildTagDirectory(){
+      grid.innerHTML = '加载中…';
+      try{
+        const all = await apiListPhotos([]);
+        const counter = new Map();
+        for (const p of all){
+          (p.get('tags')||[]).forEach(t=>{
+            if(!t) return;
+            counter.set(t, (counter.get(t)||0)+1);
+          });
+        }
+        grid.innerHTML = '';
+        [...counter.entries()].sort((a,b)=>b[1]-a[1]).forEach(([tag, n])=>{
+          const box = document.createElement('div');
+          box.className = 'tagbox';
+          box.innerHTML = `<span class="name">${tag}</span><span class="count">${n}</span>`;
+          box.onclick = ()=>{
+            if (search) search.value = tag;
+            closePanel();
+            document.dispatchEvent(new CustomEvent('refresh-gallery'));
+            gallery?.scrollIntoView({behavior:'smooth', block:'start'});
+          };
+          grid.appendChild(box);
+        });
+        if (!grid.children.length) grid.innerHTML = '<div class="muted">还没有任何标签～</div>';
+      }catch(e){
+        grid.innerHTML = '加载失败：' + e.message;
+      }
+    }
+    openBtn && openBtn.addEventListener('click', ()=>{ openPanel(); buildTagDirectory(); });
+
+    const viewer  = document.getElementById('viewer');
+    const imgEl   = document.getElementById('viewerImg');
+    let urls = [], idx = 0, x0 = 0, longTimer = null;
+    const LONG_MS = 550, SWIPE_PX = 40;
+
+    function collect(){ urls = Array.from(document.querySelectorAll('#galleryRoot img.thumb')).map(i=>i.src); }
+    function show(i){ if(!urls.length) return; idx=(i+urls.length)%urls.length; imgEl.src=urls[idx]; }
+    function openWith(src){ collect(); const i = urls.indexOf(src); show(i>=0?i:0); viewer.classList.remove('hide'); }
+    function close(){ viewer.classList.add('hide'); }
+    function downloadCurrent(){
+      const src = urls[idx]; if(!src) return;
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS){ window.open(src,'_blank','noopener'); setTimeout(()=>alert('在打开的原图页面长按保存到相册'),100); return; }
+      const a = document.createElement('a'); a.href = src; a.setAttribute('download','photo.jpg'); document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    gallery?.addEventListener('click', e=>{
+      const t = e.target;
+      if (t && t.tagName==='IMG' && t.classList.contains('thumb')) openWith(t.src);
+    });
+
+    viewer.addEventListener('touchstart', e=>{
+      if (viewer.classList.contains('hide')) return;
+      x0 = e.touches[0].clientX;
+      clearTimeout(longTimer); longTimer = setTimeout(downloadCurrent, LONG_MS);
+    }, {passive:true});
+    viewer.addEventListener('touchmove', ()=>{ if(longTimer) clearTimeout(longTimer); }, {passive:true});
+    viewer.addEventListener('touchend', e=>{
+      if (viewer.classList.contains('hide')) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (longTimer) clearTimeout(longTimer);
+      if (Math.abs(dx) > SWIPE_PX) show(idx + (dx>0 ? -1 : +1));
+    }, {passive:true});
+    viewer.addEventListener('click', e=>{ if (e.target===viewer) close(); });
+    document.addEventListener('keydown', e=>{
+      if (viewer.classList.contains('hide')) return;
+      if (e.key==='Escape') close();
+      if (e.key==='ArrowLeft')  show(idx-1);
+      if (e.key==='ArrowRight') show(idx+1);
+    });
+    document.addEventListener('refresh-gallery', collect);
+  })();
   </script>
 </body>
 </html>
