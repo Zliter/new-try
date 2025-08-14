@@ -6,7 +6,7 @@
   <script>document.documentElement.classList.add('light');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>我们班的家｜在线相册</title>
-  <link rel="stylesheet" href="./css/styles.css?v=13" />
+  <link rel="stylesheet" href="./css/styles.css?v=16" />
 
   <!-- 让“标签分类”面板即使没改 styles.css 也能好看：内联最小样式 -->
   <style>
@@ -19,6 +19,11 @@
     .tagbox .name{font-weight:600}
     .tagbox .count{font-size:12px;color:#666;background:#f3f5f7;padding:2px 6px;border-radius:999px}
     @media (max-width:768px){.tagdir-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}}
+
+    /* ===== 全屏查看器（纯净版） ===== */
+    .viewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center}
+    .viewer.hide{display:none}
+    .viewer img{max-width:94vw;max-height:94vh;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);touch-action:none}
   </style>
 </head>
 <body>
@@ -64,6 +69,11 @@
     <section id="galleryRoot"></section>
   </main>
 
+  <!-- 全屏图片查看器（点击缩略图进入；左右滑动；长按下载） -->
+  <div id="viewer" class="viewer hide" aria-hidden="true">
+    <img id="viewerImg" alt="preview">
+  </div>
+
   <!-- 全屏标签目录面板 -->
   <div id="tagDir" class="tagdir hide" aria-hidden="true">
     <div class="tagdir-head">
@@ -79,14 +89,15 @@
   <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4/dist/av-min.js"></script>
 
   <!-- 你的脚本（带版本号破缓存） -->
-  <script src="./js/config.js?v=13"></script>
-  <script src="./js/api.js?v=13"></script>
-  <script src="./js/ui.js?v=13"></script>
-  <script src="./js/app.js?v=13"></script>
+  <script src="./js/config.js?v=16"></script>
+  <script src="./js/api.js?v=16"></script>
+  <script src="./js/ui.js?v=16"></script>
+  <script src="./js/app.js?v=16"></script>
 
-  <!-- 绑定“标签分类”目录（无需改动 app.js） -->
+  <!-- 标签分类目录 + 全屏查看器逻辑（无需改动 app.js / ui.js） -->
   <script>
   (async function(){
+    // ===== 标签分类 =====
     const openBtn = document.getElementById('openTagDir');
     const closeBtn = document.getElementById('closeTagDir');
     const panel   = document.getElementById('tagDir');
@@ -95,7 +106,6 @@
     const gallery = document.getElementById('galleryRoot');
     const themeBtn = document.getElementById('themeBtn');
 
-    // 主题按钮保留可用；如果你不想要它，直接删掉按钮和这段判断
     if (themeBtn) themeBtn.onclick = ()=> document.documentElement.classList.toggle('light');
 
     function openPanel(){ panel.classList.remove('hide'); }
@@ -132,8 +142,102 @@
         grid.innerHTML = '加载失败：' + e.message;
       }
     }
-
     openBtn && openBtn.addEventListener('click', ()=>{ openPanel(); buildTagDirectory(); });
+
+    // ===== 全屏查看器：点击缩略图进入 / 左右滑动切换 / 长按下载 =====
+    const viewer  = document.getElementById('viewer');
+    const imgEl   = document.getElementById('viewerImg');
+
+    let urls = [];     // 当前页所有缩略图 src
+    let idx  = 0;      // 当前索引
+    let x0   = 0;      // touchstart X
+    let longTimer = null;
+    const LONG_MS = 550;   // 长按判定
+    const SWIPE_PX = 40;   // 滑动阈值
+
+    function collect(){
+      urls = Array.from(document.querySelectorAll('#galleryRoot img.thumb')).map(i=>i.src);
+    }
+    function show(i){
+      if (!urls.length) return;
+      if (i < 0) i = urls.length - 1;
+      if (i >= urls.length) i = 0;
+      idx = i;
+      imgEl.src = urls[idx];
+    }
+    function openWith(src){
+      collect();
+      const i = urls.indexOf(src);
+      show(i >= 0 ? i : 0);
+      viewer.classList.remove('hide');
+    }
+    function close(){ viewer.classList.add('hide'); }
+
+    function downloadCurrent(){
+      const src = urls[idx];
+      if (!src) return;
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS){
+        const w = window.open(src, '_blank', 'noopener');
+        setTimeout(()=>alert('在打开的原图页面，长按图片 → “添加到照片” 即可保存'), 100);
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = src;
+      a.setAttribute('download', 'photo.jpg');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    // 事件委托：点缩略图打开
+    if (gallery){
+      gallery.addEventListener('click', e=>{
+        const t = e.target;
+        if (t && t.tagName === 'IMG' && t.classList.contains('thumb')){
+          openWith(t.src);
+        }
+      });
+    }
+
+    // 触摸：滑动切图 + 长按下载
+    viewer.addEventListener('touchstart', e=>{
+      if (viewer.classList.contains('hide')) return;
+      const t = e.touches[0];
+      x0 = t.clientX;
+      clearTimeout(longTimer);
+      longTimer = setTimeout(downloadCurrent, LONG_MS);
+    }, {passive:true});
+
+    viewer.addEventListener('touchmove', ()=>{
+      if (longTimer) clearTimeout(longTimer); // 有移动就取消长按
+    }, {passive:true});
+
+    viewer.addEventListener('touchend', e=>{
+      if (viewer.classList.contains('hide')) return;
+      const x1 = e.changedTouches[0].clientX;
+      const dx = x1 - x0;
+      if (longTimer) clearTimeout(longTimer);
+      if (Math.abs(dx) > SWIPE_PX){
+        show(idx + (dx > 0 ? -1 : +1));
+      }
+    }, {passive:true});
+
+    // 点击遮罩关闭；点击图片不关闭
+    viewer.addEventListener('click', e=>{
+      if (e.target === viewer) close();
+    });
+
+    // 键盘（桌面）
+    document.addEventListener('keydown', e=>{
+      if (viewer.classList.contains('hide')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft')  show(idx - 1);
+      if (e.key === 'ArrowRight') show(idx + 1);
+    });
+
+    // 刷新相册后重收集
+    document.addEventListener('refresh-gallery', collect);
   })();
   </script>
 </body>
