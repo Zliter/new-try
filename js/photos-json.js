@@ -15,7 +15,7 @@
   window.apiListPhotos = async function(basicTags){
     const res = await fetch('./photos/index.json?v=' + Date.now());
     if (!res.ok) throw new Error('无法读取 photos/index.json');
-    let list = await res.json(); // [{url,tags,date}, ...]
+    let list = await res.json();
 
     if (basicTags && basicTags.length){
       const need = basicTags.map(s=>String(s).trim().toLowerCase()).filter(Boolean);
