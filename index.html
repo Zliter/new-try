@@ -69,7 +69,7 @@
     <section id="galleryRoot"></section>
   </main>
 
-  <!-- 全屏图片查看器（点击缩略图进入；左右滑动；长按下载） -->
+  <!-- 全屏图片查看器（点击缩略图进入；左右滑动切换；长按下载） -->
   <div id="viewer" class="viewer hide" aria-hidden="true">
     <img id="viewerImg" alt="preview">
   </div>
@@ -85,8 +85,13 @@
 
   <footer class="footer">© <span id="year"></span> 我们班的家</footer>
 
-  <!-- LeanCloud SDK（必须在你自己的脚本前） -->
+  <!-- LeanCloud SDK（仍保留，不影响新上传方案） -->
   <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4/dist/av-min.js"></script>
+
+  <!-- 读取相册清单（从 ./photos/index.json） -->
+  <script src="./js/photos-json.js?v=1"></script>
+  <!-- 前端直传 Freeimage.host（记得在该文件里填你的 FREEIMAGE_API_KEY） -->
+  <script src="./js/upload-freeimage.js?v=1"></script>
 
   <!-- 你的脚本（带版本号破缓存） -->
   <script src="./js/config.js?v=16"></script>
