@@ -1,93 +1,60 @@
-(function main(){
-  const drop=$('#drop'), picker=$('#picker'), tagInput=$('#tagInput');
-  const uploadBtn=$('#uploadBtn'), refreshBtn=$('#refreshBtn'), tip=$('#tip');
-  const themeBtn=$('#themeBtn'), searchInput=$('#searchInput'), clearBtn=$('#clearSearch');
-  let files=[];
+document.getElementById('year').textContent = new Date().getFullYear();
 
-  themeBtn.onclick=()=>document.documentElement.classList.toggle('light');
-  picker.onchange=()=>{ files=Array.from(picker.files||[]); tip.textContent=`已选择 ${files.length} 个文件`; };
-  ['dragenter','dragover','dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();}));
-  drop.addEventListener('drop',e=>{ files=Array.from(e.dataTransfer.files||[]); tip.textContent=`已选择 ${files.length} 个文件`; });
+const picker = document.getElementById('picker');
+const uploadBtn = document.getElementById('uploadBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const tip = document.getElementById('tip');
+const prog = document.getElementById('upProg');
+const gallery = document.getElementById('galleryRoot');
+const searchInput = document.getElementById('searchInput');
+const clearSearch = document.getElementById('clearSearch');
 
-  uploadBtn.onclick=async()=>{
-    if(!files.length){ tip.textContent='请先选择文件'; return; }
-    tip.textContent='正在上传…';
-    try{
-      await apiUploadFiles(files, tagInput.value);
-      tip.textContent='✅ 上传成功'; files=[]; picker.value=''; tagInput.value='';
-      document.dispatchEvent(new CustomEvent('refresh-gallery'));
-    }catch(e){ tip.textContent='上传失败：'+e.message; }
-  };
+let files = [];
 
-  refreshBtn.onclick=()=>document.dispatchEvent(new CustomEvent('refresh-gallery'));
-  async function doSearch(){
-    const kw=searchInput.value.trim(); const tags=kw?kw.split(/\s+/):[];
-    const list=await apiListPhotos(tags); renderGallery(list);
-  }
-  searchInput.addEventListener('input', doSearch);
-  clearBtn.onclick=()=>{ searchInput.value=''; doSearch(); };
+// 选择文件
+picker.addEventListener('change', e => {
+  files = Array.from(e.target.files);
+  tip.textContent = `已选择 ${files.length} 张图片`;
+});
 
-  document.addEventListener('refresh-gallery', doSearch);
-  doSearch();
-})();
-// ===== 标签目录（Tag Directory） =====
-(function tagDirectoryInit(){
-  const $ = s => document.querySelector(s);
-  const openBtn = $('#openTagDir');
-  const closeBtn = $('#closeTagDir');
-  const panel   = $('#tagDir');
-  const grid    = $('#tagDirGrid');
-  const gallery = document.getElementById('galleryRoot');
-  const searchInput = document.getElementById('searchInput');
+// 上传文件
+uploadBtn.addEventListener('click', async () => {
+  if (!files.length) return alert('请先选择文件');
+  const tags = document.getElementById('tagInput').value
+    .split(',').map(t => t.trim()).filter(Boolean);
 
-  let ALL_CACHE = null;
+  prog.style.display = 'block';
+  prog.value = 0;
 
-  async function ensureAll(){
-    if (ALL_CACHE) return ALL_CACHE;
-    ALL_CACHE = await apiListPhotos([]); // 全量
-    return ALL_CACHE;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const avFile = new AV.File(f.name, f);
+    await avFile.save();
+    await apiSavePhoto(avFile.url(), tags);
+    prog.value = ((i + 1) / files.length) * 100;
   }
 
-  async function buildTagDirectory(){
-    const all = await ensureAll();
-    const counter = new Map();
-    for (const p of all){
-      const tags = p.get('tags') || [];
-      tags.forEach(t=>{
-        if (!t) return;
-        counter.set(t, (counter.get(t)||0)+1);
-      });
-    }
-    grid.innerHTML = '';
-    const items = Array.from(counter.entries()).sort((a,b)=>b[1]-a[1]);
-    items.forEach(([tag, n])=>{
-      const box = document.createElement('div');
-      box.className = 'tagbox';
-      box.innerHTML = `<span class="name">${tag}</span><span class="count">${n}</span>`;
-      box.onclick = ()=>{
-        if (searchInput) searchInput.value = tag;
-        panel.classList.add('hide');
-        document.dispatchEvent(new CustomEvent('refresh-gallery'));
-        if (gallery && gallery.scrollIntoView) gallery.scrollIntoView({behavior:'smooth', block:'start'});
-      };
-      grid.appendChild(box);
-    });
-  }
+  tip.textContent = '上传完成！';
+  prog.style.display = 'none';
+  files = [];
+  picker.value = '';
+  loadGallery();
+});
 
-  function openPanel(){
-    panel.classList.remove('hide');
-    buildTagDirectory();
-  }
-  function closePanel(){ panel.classList.add('hide'); }
+// 刷新相册
+refreshBtn.addEventListener('click', loadGallery);
+clearSearch.addEventListener('click', () => { searchInput.value = ''; loadGallery(); });
 
-  if (openBtn) openBtn.addEventListener('click', openPanel);
-  if (closeBtn) closeBtn.addEventListener('click', closePanel);
+// 加载相册
+async function loadGallery() {
+  gallery.innerHTML = '加载中...';
+  const tags = searchInput.value.trim() ? searchInput.value.split(/\s+/) : [];
+  const photos = await apiListPhotos(tags);
 
-  panel && panel.addEventListener('click', (e)=>{
-    if (e.target === panel) closePanel();
-  });
+  gallery.innerHTML = photos.map(p => {
+    const url = p.get('url');
+    return `<img src="${url}" class="thumb" style="max-width:150px;margin:5px;">`;
+  }).join('');
+}
 
-  document.addEventListener('refresh-gallery', async ()=>{
-    if (!ALL_CACHE) ALL_CACHE = await apiListPhotos([]);
-  });
-})();
+loadGallery();
