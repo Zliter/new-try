@@ -5,16 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>我们班的家｜在线相册</title>
   <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    /* 强制默认白色主题 */
+    :root {
+      color-scheme: light;
+    }
+    body {
+      background-color: #ffffff;
+      color: #000000;
+    }
+  </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand"><div class="logo"></div><strong>我们班的家</strong></div>
-    <div class="actions"><span class="pill small">免登录 · 内部使用</span><button id="themeBtn" class="btn">🌓 主题</button></div>
+    <div class="actions">
+      <!-- 已移除 “免登录 · 内部使用” -->
+      <button id="themeBtn" class="btn">🌓 主题</button>
+    </div>
   </header>
 
   <main class="container">
     <section class="card">
-      <h2>上传照片（免登录）</h2>
+      <h2>上传照片</h2>
       <div id="drop" class="drop" tabindex="0">
         把图片拖到这里，或
         <label class="btn primary" style="cursor:pointer">选择文件
@@ -47,5 +60,12 @@
   <script src="./js/api.js"></script>
   <script src="./js/ui.js"></script>
   <script src="./js/app.js"></script>
+
+  <script>
+    // 页面加载时强制白色主题
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.remove('dark');
+    });
+  </script>
 </body>
 </html>
