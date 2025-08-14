@@ -2,21 +2,21 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <!-- 强制默认白色主题（在加载 CSS 前执行） -->
-  <script>document.documentElement.classList.add('light');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>我们班的家｜在线相册</title>
-  <link rel="stylesheet" href="./css/styles.css?v=4" />
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><div class="logo" aria-hidden="true"></div><strong>我们班的家</strong></div>
-    <div class="actions"><!-- 已移除小药丸与主题按钮 --></div>
+    <div class="brand"><div class="logo"></div><strong>我们班的家</strong></div>
+    <div class="actions"><!-- 去掉免登录提示 -->
+      <button id="themeBtn" class="btn">🌓 主题</button>
+    </div>
   </header>
 
   <main class="container">
     <section class="card">
-      <h2>上传照片</h2>
+      <h2>上传照片（免登录）</h2>
       <div id="drop" class="drop" tabindex="0">
         把图片拖到这里，或
         <label class="btn primary" style="cursor:pointer">选择文件
@@ -31,6 +31,11 @@
       <div id="tip" class="muted" style="margin-top:6px"></div>
     </section>
 
+    <!-- 新增：标签分类按钮 -->
+    <div class="row" style="margin:10px 0;">
+      <button id="openTagDir" class="btn">🏷️ 标签分类</button>
+    </div>
+
     <section class="row searchbar">
       <input id="searchInput" placeholder="按标签搜索（空格分隔多个关键词） 例：运动会 合影">
       <button id="clearSearch" class="btn">清除</button>
@@ -39,15 +44,24 @@
     <section id="galleryRoot"></section>
   </main>
 
+  <!-- 新增：标签分类全屏面板 -->
+  <div id="tagDir" class="tagdir hide" aria-hidden="true">
+    <div class="tagdir-head">
+      <strong>标签分类</strong>
+      <button id="closeTagDir" class="btn">关闭</button>
+    </div>
+    <div id="tagDirGrid" class="tagdir-grid"><!-- 动态生成 --></div>
+  </div>
+
   <footer class="footer">© <span id="year"></span> 我们班的家</footer>
 
-  <!-- LeanCloud SDK（必须在你自己的脚本前） -->
+  <!-- LeanCloud SDK -->
   <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4/dist/av-min.js"></script>
 
   <!-- 你的脚本 -->
-  <script src="./js/config.js?v=4"></script>
-  <script src="./js/api.js?v=4"></script>
-  <script src="./js/ui.js?v=4"></script>
-  <script src="./js/app.js?v=4"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/app.js"></script>
 </body>
 </html>
